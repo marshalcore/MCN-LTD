@@ -528,7 +528,7 @@ window.onload = () => {
   async function verifyAndGenerate(email, reference, fullName) {
     try {
       showLoader();
-      const verifyRes = await fetch("http://localhost:8000/payment/paystack/verify", {
+      const verifyRes = await fetch("http://marshalcore-backend.onrender.com/payment/paystack/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, reference })
@@ -536,7 +536,7 @@ window.onload = () => {
       const verifyData = await parseResponse(verifyRes);
       if (!verifyRes.ok || !verifyData) throw new Error(verifyData?.detail || "Payment verification failed.");
 
-      const genRes = await fetch(`http://localhost:8000/access/generate-password?email=${encodeURIComponent(email)}`, {
+      const genRes = await fetch(`http://marshalcore-backend.onrender.com/access/generate-password?email=${encodeURIComponent(email)}`, {
         method: "POST"
       });
       const genData = await parseResponse(genRes);
@@ -567,7 +567,7 @@ window.onload = () => {
 
     try {
       showLoader();
-      const verifyPassRes = await fetch("http://localhost:8000/access/verify", {
+      const verifyPassRes = await fetch("http://marshalcore-backend.onrender.com/access/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -600,7 +600,7 @@ window.onload = () => {
 
     try {
       showLoader();
-      const regRes = await fetch("http://localhost:8000/pre-applicant/register", {
+      const regRes = await fetch("http://marshalcore-backend.onrender.com/pre-applicant/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ full_name: fullName, email })
@@ -638,7 +638,7 @@ window.onload = () => {
 
     try {
       showLoader();
-      const res = await fetch("http://localhost:8000/apply", {
+      const res = await fetch("http://marshalcore-backend.onrender.com/apply", {
         method: "POST",
         body: formData
       });
@@ -650,7 +650,7 @@ window.onload = () => {
         return;
       }
 
-      const submitRes = await fetch("http://localhost:8000/form/submit", {
+      const submitRes = await fetch("http://marshalcore-backend.onrender.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ email: data.email, full_name: data.full_name })
