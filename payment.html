@@ -37,6 +37,9 @@
       margin: 10px 0;
       padding: 10px;
       font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
     }
 
     .contact_form-container button {
@@ -45,6 +48,14 @@
       border: none;
       padding: 12px 20px;
       cursor: pointer;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    .contact_form-container button:hover {
+      background-color: #1a3570;
     }
 
     .header-container {
@@ -133,6 +144,18 @@
     #passwordError {
       color: red;
       margin-top: 10px;
+    }
+    
+    .success-message {
+      color: green;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    
+    .error-message {
+      color: red;
+      margin-top: 10px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -270,7 +293,7 @@
           <option value="Czechia (Czech Republic)">Czechia (Czech Republic)</option>
           <option value="Democratic Republic of the Congo">Democratic Republic of the Congo</option>
           <option value="Denmark">Denmark</option>
-          <option value="Djibouti">Djibouti</option>
+          <option value="Djibouti">Djijibouti</option>
           <option value="Dominica">Dominica</option>
           <option value="Dominican Republic">Dominican Republic</option>
           <option value="Ecuador">Ecuador</option>
@@ -395,7 +418,7 @@
           <option value="Switzerland">Switzerland</option>
           <option value="Syria">Syria</option>
           <option value="Tajikistan">Tajikistan</option>
-          <option value="Tanzania">Tanzania</option>
+          <option value="Tazania">Tazania</option>
           <option value="Thailand">Thailand</option>
           <option value="Timor-Leste">Timor-Leste</option>
           <option value="Togo">Togo</option>
@@ -486,6 +509,9 @@ window.onload = () => {
   const passwordError = document.getElementById("passwordError");
   const pageLoader = document.getElementById("pageLoader");
 
+  // CORRECTED: Use your actual backend URL
+  const API_BASE_URL = 'https://backend-mcn-ltd.onrender.com';
+
   function showLoader() {
     pageLoader.style.display = "flex";
   }
@@ -528,7 +554,7 @@ window.onload = () => {
   async function verifyAndGenerate(email, reference, fullName) {
     try {
       showLoader();
-      const verifyRes = await fetch("http://marshalcore-backend.onrender.com/payment/paystack/verify", {
+      const verifyRes = await fetch(`${API_BASE_URL}/payment/paystack/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, reference })
@@ -536,7 +562,7 @@ window.onload = () => {
       const verifyData = await parseResponse(verifyRes);
       if (!verifyRes.ok || !verifyData) throw new Error(verifyData?.detail || "Payment verification failed.");
 
-      const genRes = await fetch(`http://marshalcore-backend.onrender.com/access/generate-password?email=${encodeURIComponent(email)}`, {
+      const genRes = await fetch(`${API_BASE_URL}/access/generate-password?email=${encodeURIComponent(email)}`, {
         method: "POST"
       });
       const genData = await parseResponse(genRes);
@@ -567,7 +593,7 @@ window.onload = () => {
 
     try {
       showLoader();
-      const verifyPassRes = await fetch("http://marshalcore-backend.onrender.com/access/verify", {
+      const verifyPassRes = await fetch(`${API_BASE_URL}/access/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -600,7 +626,7 @@ window.onload = () => {
 
     try {
       showLoader();
-      const regRes = await fetch("http://marshalcore-backend.onrender.com/pre-applicant/register", {
+      const regRes = await fetch(`${API_BASE_URL}/pre-applicant/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ full_name: fullName, email })
@@ -638,7 +664,7 @@ window.onload = () => {
 
     try {
       showLoader();
-      const res = await fetch("http://marshalcore-backend.onrender.com/apply", {
+      const res = await fetch(`${API_BASE_URL}/apply`, {
         method: "POST",
         body: formData
       });
@@ -650,7 +676,7 @@ window.onload = () => {
         return;
       }
 
-      const submitRes = await fetch("http://marshalcore-backend.onrender.com/submit", {
+      const submitRes = await fetch(`${API_BASE_URL}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ email: data.email, full_name: data.full_name })
