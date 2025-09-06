@@ -469,6 +469,19 @@ carousel-item {
   background-image: url(../images/security-3.jpg);
 }
 
+.security_section .security_img-box.i-box-4 {
+  background-image: url(../images/security-4.jpg);
+}
+
+.security_section .security_img-box.i-box-5 {
+  background-image: url(../images/security-5.jpg);
+}
+
+.security_section .security_img-box.i-box-6 {
+  background-image: url(../images/security-6.jpg);
+}
+
+
 .security_section .security_img-box a {
   display: none;
   opacity: 0;
@@ -950,6 +963,151 @@ carousel-item {
 }
 /* end mcnlbcs section */
 
+/* ===================================================================
+ * # social  
+ *
+ * ------------------------------------------------------------------- */
+.s-social {
+  padding-top: 10.4rem;
+  padding-bottom: 9.6rem;
+  background-color: #000000;
+}
 
+.social-content {
+  max-width: 1000px;
+}
+
+.social-list {
+  list-style: none;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  line-height: 5.6rem;
+  text-transform: uppercase;
+  letter-spacing: .4rem;
+  text-align: center;
+  margin: 0;
+}
+
+.social-list li {
+  display: inline-block;
+  margin-right: 2.4rem;
+  margin-left: 2.4rem;
+}
+
+.social-list a {
+  color: #ffffff;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-flow: row nowrap;
+  -ms-flex-flow: row nowrap;
+  flex-flow: row nowrap;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+
+.social-list__icon {
+  display: block;
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 50%;
+  border: 1px solid #ffffff;
+  margin-right: 2rem;
+  position: relative;
+}
+
+.social-list__icon::before {
+  content: "";
+  display: block;
+  height: 2rem;
+  width: 2rem;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+  -webkit-transform: translate3d(-50%, -50%, 0);
+  transform: translate3d(-50%, -50%, 0);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.social-list__icon--facebook::before {
+  background-image: url(../images/icon-facebook.svg);
+}
+
+.social-list__icon--twitter::before {
+  background-image: url(../images/icon-twitter.svg);
+}
+
+.social-list__icon--instagram::before {
+  background-image: url(../images/icon-instagram.svg);
+}
+
+.social-list__icon--email::before {
+  background-image: url(../images/icons/social/icon-email.svg);
+}
+
+/* ------------------------------------------------------------------- 
+ * responsive:
+ * social
+ * ------------------------------------------------------------------- */
+@media screen and (max-width:1200px) {
+  .social-list li {
+    margin-right: 1.2rem;
+    margin-left: 1.2rem;
+  }
+
+}
+
+@media screen and (max-width:1000px) {
+  .social-list__text {
+    display: none;
+  }
+
+  .social-list__icon {
+    width: 5.6rem;
+    height: 5.6rem;
+    margin-right: 0;
+  }
+
+  .social-list__icon::before {
+    height: 2.4rem;
+    width: 2.4rem;
+  }
+
+}
+
+@media screen and (max-width:600px) {
+  .social-list__icon {
+    width: 4.8rem;
+    height: 4.8rem;
+  }
+
+  .social-list__icon::before {
+    height: 2rem;
+    width: 2rem;
+  }
+
+}
+
+@media screen and (max-width:400px) {
+  .social-list li {
+    margin-right: .8rem;
+    margin-left: .8rem;
+  }
+
+  .social-list__icon {
+    width: 4.4rem;
+    height: 4.4rem;
+  }
+
+  .social-list__icon::before {
+    height: 1.6rem;
+    width: 1.6rem;
+  }
+
+}
 
 
