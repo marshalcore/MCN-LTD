@@ -157,6 +157,14 @@
       margin-top: 10px;
       font-weight: bold;
     }
+
+    .status-message {
+      background-color: #f8f9fa;
+      border-left: 4px solid #254a93;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
@@ -177,6 +185,7 @@
 <section class="layout_padding section-container active-section" id="paymentSection">
   <div class="container">
     <h2>Pay ₦5000 to Apply</h2>
+    <div id="statusMessage" class="status-message" style="display: none;"></div>
     <form id="paymentForm" class="contact_form-container">
       <input type="text" id="fullName" placeholder="Enter your full name" required />
       <input type="email" id="email" placeholder="Enter your email" required />
@@ -508,6 +517,7 @@ window.onload = () => {
   const submitPasswordBtn = document.getElementById("submitPasswordBtn");
   const passwordError = document.getElementById("passwordError");
   const pageLoader = document.getElementById("pageLoader");
+  const statusMessage = document.getElementById("statusMessage");
 
   // CORRECTED: Use your actual backend URL
   const API_BASE_URL = 'https://backend-mcn-ltd.onrender.com';
@@ -532,6 +542,17 @@ window.onload = () => {
     paymentForm.reset();
     passwordForm.reset();
     applicationForm.reset();
+  }
+
+  function showStatusMessage(message, isError = false) {
+    statusMessage.textContent = message;
+    statusMessage.style.display = 'block';
+    statusMessage.style.color = isError ? 'red' : 'green';
+    statusMessage.style.borderLeftColor = isError ? 'red' : 'green';
+  }
+
+  function hideStatusMessage() {
+    statusMessage.style.display = 'none';
   }
 
   let tempEmail = "";
@@ -623,6 +644,8 @@ window.onload = () => {
     e.preventDefault();
     const fullName = document.getElementById("fullName").value.trim();
     const email = document.getElementById("email").value.trim();
+    
+    hideStatusMessage();
 
     try {
       showLoader();
@@ -631,11 +654,20 @@ window.onload = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ full_name: fullName, email })
       });
-      hideLoader();
-
+      
       const regData = await parseResponse(regRes);
-      if (!regRes.ok || !regData) throw new Error(regData?.detail || "Pre-registration failed");
+      
+      if (!regRes.ok) {
+        // Check if this is an existing user with special status
+        if (regData.status && regData.status !== "created") {
+          hideLoader();
+          handleExistingUser(regData, email, fullName);
+          return;
+        }
+        throw new Error(regData?.detail || "Pre-registration failed");
+      }
 
+      // New user - proceed with payment
       if (typeof PaystackPop === "undefined") throw new Error("❌ Paystack script not loaded.");
 
       const handler = PaystackPop.setup({
@@ -650,11 +682,91 @@ window.onload = () => {
       });
 
       handler.openIframe();
+      hideLoader();
 
     } catch (err) {
       hideLoader();
       console.error("🔥 Payment flow error:", err);
       alert("❌ Unexpected error during payment.\n\n" + err.message);
+    }
+  }
+
+  function handleExistingUser(regData, email, fullName) {
+    // Handle different statuses for existing users
+    switch(regData.status) {
+      case "exists_not_paid":
+        // User exists but hasn't paid - proceed with payment
+        if (typeof PaystackPop === "undefined") {
+          alert("❌ Paystack script not loaded.");
+          return;
+        }
+
+        const handler = PaystackPop.setup({
+          key: "pk_test_c6ff4f4622c7e35eb557e9e3be0c7424b5d0a3d4",
+          email,
+          amount: 500000,
+          currency: "NGN",
+          callback: function (response) {
+            verifyAndGenerate(email, response.reference, fullName);
+          },
+          onClose: () => alert("Payment window closed.")
+        });
+
+        handler.openIframe();
+        break;
+
+      case "password_sent":
+        // Password already sent - redirect to password input
+        showStatusMessage("Password already sent to your email. Please check your inbox.", false);
+        tempEmail = email;
+        tempFullName = fullName;
+        verifyEmailInput.value = email;
+        showSection("passwordSection");
+        break;
+
+      case "payment_completed":
+        // Payment completed but password not generated yet
+        showStatusMessage("Payment completed. Please wait while we generate your password...", false);
+        // Auto-generate password after a short delay
+        setTimeout(() => {
+          generatePasswordForExistingUser(email, fullName);
+        }, 2000);
+        break;
+
+      case "already_completed":
+        // Application already submitted
+        showStatusMessage("Application already submitted with this email. Please contact support if you need assistance.", true);
+        break;
+
+      case "password_used":
+        // Password already used
+        showStatusMessage("This password has already been used. Please contact support if you need assistance.", true);
+        break;
+
+      default:
+        showStatusMessage("Unexpected status received. Please contact support.", true);
+    }
+  }
+
+  async function generatePasswordForExistingUser(email, fullName) {
+    try {
+      showLoader();
+      const genRes = await fetch(`${API_BASE_URL}/access/generate-password?email=${encodeURIComponent(email)}`, {
+        method: "POST"
+      });
+      
+      const genData = await parseResponse(genRes);
+      if (!genRes.ok || !genData) throw new Error(genData?.detail || "Password generation failed.");
+
+      tempEmail = email;
+      tempFullName = fullName;
+      verifyEmailInput.value = email;
+      showSection("passwordSection");
+      hideLoader();
+
+    } catch (err) {
+      hideLoader();
+      alert("Error generating password: " + err.message);
     }
   }
 
