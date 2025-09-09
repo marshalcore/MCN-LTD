@@ -640,113 +640,57 @@ window.onload = () => {
     }
   }
 
-  async function handlePaymentFlow(e) {
-    e.preventDefault();
-    const fullName = document.getElementById("fullName").value.trim();
-    const email = document.getElementById("email").value.trim();
+ async function handlePaymentFlow(e) {
+  e.preventDefault();
+  const fullName = document.getElementById("fullName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  
+  hideStatusMessage();
+
+  try {
+    showLoader();
+    const regRes = await fetch(`${API_BASE_URL}/pre-applicant/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ full_name: fullName, email })
+    });
     
-    hideStatusMessage();
-
-    try {
-      showLoader();
-      const regRes = await fetch(`${API_BASE_URL}/pre-applicant/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ full_name: fullName, email })
-      });
-      
-      const regData = await parseResponse(regRes);
-      
-      if (!regRes.ok) {
-        // Check if this is an existing user with special status
-        if (regData.status && regData.status !== "created") {
-          hideLoader();
-          handleExistingUser(regData, email, fullName);
-          return;
-        }
-        throw new Error(regData?.detail || "Pre-registration failed");
-      }
-
-      // New user - proceed with payment
-      if (typeof PaystackPop === "undefined") throw new Error("❌ Paystack script not loaded.");
-
-      const handler = PaystackPop.setup({
-        key: "pk_test_c6ff4f4622c7e35eb557e9e3be0c7424b5d0a3d4",
-        email,
-        amount: 500000,
-        currency: "NGN",
-        callback: function (response) {
-          verifyAndGenerate(email, response.reference, fullName);
-        },
-        onClose: () => alert("Payment window closed.")
-      });
-
-      handler.openIframe();
+    const regData = await parseResponse(regRes);
+    
+    // ✅ CHECK FOR STATUS FIELD IN BOTH SUCCESS AND ERROR RESPONSES
+    if (regData.status) {
       hideLoader();
-
-    } catch (err) {
-      hideLoader();
-      console.error("🔥 Payment flow error:", err);
-      alert("❌ Unexpected error during payment.\n\n" + err.message);
+      handleExistingUser(regData, email, fullName);
+      return;
     }
-  }
-
-  function handleExistingUser(regData, email, fullName) {
-    // Handle different statuses for existing users
-    switch(regData.status) {
-      case "exists_not_paid":
-        // User exists but hasn't paid - proceed with payment
-        if (typeof PaystackPop === "undefined") {
-          alert("❌ Paystack script not loaded.");
-          return;
-        }
-
-        const handler = PaystackPop.setup({
-          key: "pk_test_c6ff4f4622c7e35eb557e9e3be0c7424b5d0a3d4",
-          email,
-          amount: 500000,
-          currency: "NGN",
-          callback: function (response) {
-            verifyAndGenerate(email, response.reference, fullName);
-          },
-          onClose: () => alert("Payment window closed.")
-        });
-
-        handler.openIframe();
-        break;
-
-      case "password_sent":
-        // Password already sent - redirect to password input
-        showStatusMessage("Password already sent to your email. Please check your inbox.", false);
-        tempEmail = email;
-        tempFullName = fullName;
-        verifyEmailInput.value = email;
-        showSection("passwordSection");
-        break;
-
-      case "payment_completed":
-        // Payment completed but password not generated yet
-        showStatusMessage("Payment completed. Please wait while we generate your password...", false);
-        // Auto-generate password after a short delay
-        setTimeout(() => {
-          generatePasswordForExistingUser(email, fullName);
-        }, 2000);
-        break;
-
-      case "already_completed":
-        // Application already submitted
-        showStatusMessage("Application already submitted with this email. Please contact support if you need assistance.", true);
-        break;
-
-      case "password_used":
-        // Password already used
-        showStatusMessage("This password has already been used. Please contact support if you need assistance.", true);
-        break;
-
-      default:
-        showStatusMessage("Unexpected status received. Please contact support.", true);
+    
+    if (!regRes.ok) {
+      throw new Error(regData?.detail || "Pre-registration failed");
     }
+
+    // New user - proceed with payment
+    if (typeof PaystackPop === "undefined") throw new Error("❌ Paystack script not loaded.");
+
+    const handler = PaystackPop.setup({
+      key: "pk_test_c6ff4f4622c7e35eb557e9e3be0c7424b5d0a3d4",
+      email,
+      amount: 500000,
+      currency: "NGN",
+      callback: function (response) {
+        verifyAndGenerate(email, response.reference, fullName);
+      },
+      onClose: () => alert("Payment window closed.")
+    });
+
+    handler.openIframe();
+    hideLoader();
+
+  } catch (err) {
+    hideLoader();
+    console.error("🔥 Payment flow error:", err);
+    alert("❌ Unexpected error during payment.\n\n" + err.message);
   }
+}
 
   async function generatePasswordForExistingUser(email, fullName) {
     try {
